@@ -26,7 +26,9 @@ gap was intended to provide a delay between packets; now, however, a
 12 byte gap provides minimal time delay, and acts simply as a separation
 between packets. Because of this, in some cases, that gap is now reduced
 to 8 bytes. (In this assignment, to simplify things, we'll only be concerned
-with an inter-packet gap of at least 12 bytes.)
+with an inter-packet gap of at least 12 bytes.) Inter-packet gap looks
+like idle signal, generally a high voltage level on the wire, or all `1`
+bits. You can find idle signal by searching for repeated `FF` octets.
 
 A new Ethernet packet is signified by a preamble of 7 bytes (octets) of
 alternating 1s and 0s, followed by a 1-byte *start frame delimiter (SFD)*
@@ -36,44 +38,62 @@ alternating 1s and 0s, followed by a 1-byte *start frame delimiter (SFD)*
 An Ethernet frame is the layer 2 routing portion of the packet, and begins
 immediately after the SFD.
 
+So, to find an Ethernet frame in a stream of data, you'll need to first
+identify the preamble and SFD. Then, capture from the octet after the SFD
+until you see 12 or more octets of idle signal. The captured packet can
+then be trimmed of the additional idle signal and parsed. Use the frame
+check sequence to ensure that you've captured a complete frame.
+
 ## Your Assignment
 
-To complete this assignment, you need to write the body of the `parse`
-function defined and exported from `index.js`. You do not need to worry
-about asynchronous operations yet -- just be able to parse the incoming
-byte `Buffer` using the appropriate protocol.
+To complete this assignment, you need to write the body of the `parseFrames`
+function defined and exported from `index.js`. In addition, you'll need to
+implement the `EthernetSocketProcessor`, an `EventEmitter` class that listens
+to a socket and parses Ethernet frames as data arrives and emits them in
+`data` events.
+
+This processing is inherently asychronous. Sockets generally implement the
+`streams.Readable` interface, so you can look at that class in the Node.js
+documentation to get an idea of how data will come into your class.
+
+Once you've found the frames that must be parsed, you'll use your frame
+parser from assignment A1 to parse the fields out of the frame, so that you
+can emit a parsed JavaScript object representing the frame's data.
 
 ### Expected Output
 
 Your class should extend/implement either `events.EventEmitter` or one of the
 writable `stream` classes (which implement `events.EventEmitter` already), and
 emit 'data' events with the same JavaScript object structure as in Assignment A1
-(included below as a reminder) as the event's message. The exported function in
-`index.js` should also capture all frames parsed along the way, and should return
-a JavaScript `Promise` object that resolves with an array of those parsed frame
-objects once the socket is closed.
+(included below, inside the array, as a reminder) as the event's message. The
+exported function in `index.js` should also capture all frames parsed along the
+way, and should return a JavaScript `Promise` object that resolves with an array
+of those parsed frame objects once the socket is closed.
 
 ```{text}
-{
-  protocol: (either "Ethernet II" or "IEEE 802.3"),
-  header: {
-    destinationMAC: (MAC address binary value as length 6 Buffer),
-    destination: (MAC Address human-readable text string),
-    sourceMAC: (MAC address binary value as length 6 Buffer),
-    source: (MAC Address human-readable text string),
-    type: (16-bit Unsigned integer value),
-    length: (16-bit Unsigned integer value, number of payload bytes),
-    llc: { // only include if relevant to protocol
-      dsap: (Unsigned Integer),
-      ssap: (Unsigned Integer),
-      control: (Unsigned Integer)
+[
+  {
+    protocol: (either "Ethernet II" or "IEEE 802.3"),
+    header: {
+      destinationMAC: (MAC address binary value as length 6 Buffer),
+      destination: (MAC Address human-readable text string),
+      sourceMAC: (MAC address binary value as length 6 Buffer),
+      source: (MAC Address human-readable text string),
+      type: (16-bit Unsigned integer value),
+      length: (16-bit Unsigned integer value, number of payload bytes),
+      llc: { // only include if relevant to protocol
+        dsap: (Unsigned Integer),
+        ssap: (Unsigned Integer),
+        control: (Unsigned Integer)
+      },
+      snap_oui: (MAC OUI binary value as length 3 Buffer, if relevant to protocol)
     },
-    snap_oui: (MAC OUI binary value as length 3 Buffer, if relevant to protocol)
+    payload: (payload data in binary format as an Buffer with appropriate length),
+    frame_check: (Integer CRC-32 frame check sequence value),
+    frame_check_valid: (Boolean, true if computed FCS matches)
   },
-  payload: (payload data in binary format as an Buffer with appropriate length),
-  frame_check: (Integer CRC-32 frame check sequence value),
-  frame_check_valid: (Boolean, true if computed FCS matches)
-}
+  ...
+]
 ```
 
 ### Program Structure
@@ -96,6 +116,12 @@ that should be helpful:
 
 - `ethernet` folder - this is where you should copy the entire assignment A1
   project directory so that you can import it as `ethernet` into your new project
+- `EthernetSocketProcessor.js` - an empty module where you can create your
+  socket processor class that emits the appropriate events.
+
+In addition to that, you'll find the main files in the repo root containing
+helpful tests and starter code:
+
 - `index.js` - the starting point for your class, which should _only_ import and
   export the class for use (the class should be created in its own module in `lib`).
 - `index.test.js` - a suite of tests that will assess the correctness of your
@@ -137,10 +163,17 @@ to do the following things:
   `<path>` with the folder path to your project directory, to get there):
 
   ```{sh}
-  nvm use 12.18.3
+  nvm use 12.18
   npm install
   npm test
   ```
+
+This assignment will also automatically check your code style for readability. To run those tests
+at your own command line, you can use:
+
+```{sh}
+npm run lint
+```
 
 ### Submission and Feedback
 
