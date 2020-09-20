@@ -61,10 +61,11 @@ describe('MockEthernetSocket', () => {
       done();
     });
     socket.pushEthernetII(0, 3);
-    socket.pushEthernetII(5, 0);
+    socket.pushIEEE802_3(5);
   });
 
   it('emits a close event on connection close', (done) => {
+    socket.pushIEEE802_3(undefined, 5);
     socket.pushEthernetII(21, 6);
     socket.on('data', (_data) => { });
     socket.on('close', (err) => {
@@ -80,6 +81,27 @@ describe('MockEthernetSocket', () => {
     socket.on('error', (err) => {
       expect(err).toBeInstanceOf(Error);
       expect(err.message).toEqual('Yowza!');
+      done();
+    });
+    socket.close(new Error('Yowza!'));
+  });
+
+  it('provides socket status "open" when open', () => {
+    expect(socket.status).toEqual('open');
+  });
+
+  it('provides socket status "closed" when closed', (done) => {
+    socket.on('close', () => {
+      expect(socket.status).toEqual('closed');
+      done();
+    });
+    socket.close();
+  });
+
+  it('provides socket status "closed" after an error', (done) => {
+    socket.on('error', (err) => {
+      // ignore the error
+      expect(socket.status).toEqual('closed');
       done();
     });
     socket.close(new Error('Yowza!'));
