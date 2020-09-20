@@ -1,0 +1,22 @@
+{
+  "name": "ethernet-parser-async",
+  "version": "0.1.0",
+  "description": "A stream event driven packet parser for Ethernet packets that operates asynchronously",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest",
+    "coverage": "jest --coverage",
+    "lint": "node ./node_modules/eslint/bin/eslint.js index.js index.test.js ./lib/**/*.js"
+  },
+  "dependencies": {
+    "eslint": "^7.9.0"
+  },
+  "devDependencies": {
+    "jest": "^26.4.2"
+  },
+  "jest": {
+    "testEnvironment": "node"
+  },
+  "author": "Ryan B. Harvey",
+  "license": "UNLICENSED"
+}
