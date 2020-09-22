@@ -1,7 +1,7 @@
 /* Copy your ethernet parser module from Assignment A1 into the ./lib/ethernet folder */
 // const ethernet = require('./lib/ethernet');
 /* Implement and export the EthernetSocketProcessor class to complete the assignment */
-const { EthernetSocketProcessor } = require('./lib/EthernetSocketProcessor');
+const EthernetSocketProcessor = require('./lib/EthernetSocketProcessor');
 
 /**
  * Parse Ethernet packets from a socket with a stream.Readable interface
