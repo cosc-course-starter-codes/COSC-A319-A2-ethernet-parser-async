@@ -1,15 +1,30 @@
-{
-  "env": {
-    "browser": false,
-    "node": true,
-    "es6": true,
-    "mocha": true
+module.exports = {
+  env: {
+    browser: false,
+    es2021: true,
+    'jest/globals': true,
+    node: true,
   },
-  "parserOptions": {
-    "ecmaVersion": 2018,
-    "sourceType": "module"
+  extends: 'airbnb-base',
+  plugins: ['jest'],
+  overrides: [
+    {
+      env: {
+        node: true,
+      },
+      files: [
+        '.eslintrc.{js,cjs}',
+      ],
+      parserOptions: {
+        sourceType: 'script',
+      },
+    },
+  ],
+  parserOptions: {
+    ecmaVersion: 'latest',
+    sourceType: "module"
   },
-  "rules": {
+  rules: {
     "valid-jsdoc": ["error", {
       "requireReturn": true,
       "requireReturnType": true,
@@ -22,14 +37,14 @@
     }],
     "require-jsdoc": ["warn", {
       "require": {
-          "FunctionDeclaration": true,
-          "MethodDefinition": true,
-          "ClassDeclaration": true
+        "FunctionDeclaration": true,
+        "MethodDefinition": true,
+        "ClassDeclaration": true
       }
     }],
     "no-var": 1,
     "no-eval": "error",
-    "indent": [ "error", 2, { "SwitchCase": 1 } ],
+    "indent": ["error", 2, { "SwitchCase": 1 }],
     "quotes": ["error", "single", {
       "avoidEscape": true,
       "allowTemplateLiterals": true
@@ -49,6 +64,11 @@
     "max-nested-callbacks": [
       "error",
       5
-    ]
-  }
-}
+    ],
+    "jest/no-disabled-tests": "warn",
+    "jest/no-focused-tests": "error",
+    "jest/no-identical-title": "error",
+    "jest/prefer-to-have-length": "warn",
+    "jest/valid-expect": "error",
+  },
+};
