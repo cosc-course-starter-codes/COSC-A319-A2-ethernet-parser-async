@@ -128,10 +128,15 @@ class, which you can use as a specification for what that class should do.)
 In this repo, you will find a `lib` folder which contains several things
 that should be helpful:
 
-- `ethernet` folder - this is where you should copy the entire assignment A1
-  project directory so that you can import it as `ethernet` into your new project
 - `EthernetSocketProcessor.js` - an empty module where you can create your
   socket processor class that emits the appropriate events.
+- `EthernetSocketProcessor.test.js` - a suite of tests to validate the
+  successful functioning of your socket processor class.
+
+This `lib` folder can also be used to house any new modules or classes you
+write to support the operation of your `EthernetSocketProcessor` class. If
+you add new files here, you should also add tests to validate their
+correctness.
 
 In addition to that, you'll find the main files in the repo root containing
 helpful tests and starter code:
