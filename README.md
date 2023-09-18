@@ -181,7 +181,7 @@ to do the following things:
   by using [the NPM `package.json` syntax for Github-based package dependencies](https://docs.npmjs.com/cli/v9/configuring-npm/package-json#git-urls-as-dependencies):
 
   ```{text}
-  git+ssh://git@github.com:npm/cli.git#branch-or-tag-name
+  git+ssh://git@github.com:CLASSROOM_ORG_NAME/REPO_NAME.git#BRANCH_OR_TAG_NAME
   ```
   
   (Note that this expects that you've already [setup SSH-based command line Github access](https://docs.github.com/en/authentication/connecting-to-github-with-ssh).)
