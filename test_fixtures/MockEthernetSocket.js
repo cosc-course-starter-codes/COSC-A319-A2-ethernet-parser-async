@@ -96,7 +96,7 @@ class MockEthernetSocket extends Readable {
    */
   pushEthernetII (lead_n = 0, tail_n = 0) {
     this.idle(lead_n);
-    this.preamble();
+    this.preamble(false);
     const parsedFrame = this.ethernet2frame();
     this.interframeGap(tail_n);
     return parsedFrame;
@@ -130,7 +130,7 @@ class MockEthernetSocket extends Readable {
    */
   pushIEEE802_3 (lead_n = 0, tail_n = 0) {
     this.idle(lead_n);
-    this.preamble(lead_n);
+    this.preamble(true);
     const parsedFrame = this.ieee8023frame();
     this.interframeGap(tail_n);
     return parsedFrame;
@@ -161,13 +161,16 @@ class MockEthernetSocket extends Readable {
 
   /**
    * Enqueue the frame preamble (with start-of-frame delimiter)
+   * @param {boolean} sfd - include the start-of-frame delimiter when true
    * @returns {void}
    */
-  preamble () {
+  preamble (sfd) {
     const preamble = [
-      // 10101010 ... 10101010 10101011
-      0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xab
+      // 10101010 ... 10101010, 7 bytes
+      0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa
     ];
+    // Add final byte, either preamble (10101010) or start-of-frame delimiter (10101011)
+    preamble.push(sfd ? 0xab : 0xaa);
     this.enqueue(Buffer.from(preamble));
   }
 

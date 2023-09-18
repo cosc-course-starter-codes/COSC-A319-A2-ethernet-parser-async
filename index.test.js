@@ -38,9 +38,10 @@ describe('index.js', () => {
   it('returns the expected parsed ethernet frames from a stream', async () => {
     const frame1 = socket.pushEthernetII(6, 3);
     const frame2 = socket.pushIEEE802_3(3, 11);
-    const frame3 = socket.pushEthernetII(undefined, 1);
+    const frame3 = socket.pushIEEE802_3(1, 23);
+    const frame4 = socket.pushEthernetII(undefined, 1);
     const frames = parseFrames(socket);
     socket.close();
-    expect(await frames).toEqual([frame1, frame2, frame3]);
+    expect(await frames).toEqual([frame1, frame2, frame3, frame4]);
   });
 });
