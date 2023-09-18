@@ -216,12 +216,12 @@ to do the following things:
 ### Submission and Feedback
 
 You must submit your changes as commits to a new branch of your creation in the
-repository. Commits to the `master` branch will not be reviewed. Please follow
+repository. Commits to the `main` branch will not be reviewed. Please follow
 appropriate naming conventions for git branches: alpha-numeric characters plus
 `-`, `_`, and `/`, with branch name conveying meaning related to your changes.
 
 Once you have a new branch and have pushed that branch to Github, you will need
-to create a new Pull Request based on that branch compared against the `master`
+to create a new Pull Request based on that branch compared against the `main`
 branch. As you push your commits on the new branch up to Github, they
 will be added to the activity on this pull request. You can create this pull request
 in either Draft or normal mode at your discretion.
