@@ -30,19 +30,33 @@ with an inter-packet gap of at least 12 bytes.) Inter-packet gap looks
 like idle signal, generally a high voltage level on the wire, or all `1`
 bits. You can find idle signal by searching for repeated `FF` octets.
 
-A new Ethernet packet is signified by a preamble of 7 bytes (octets) of
-alternating 1s and 0s, followed by a 1-byte *start frame delimiter (SFD)*
-`10101011`. In hexadecimal, this preamble and SFD sequence is
-`AA AA AA AA AA AA AA AB`.
+A new DIX Ethernet II packet is signified by a preamble of 8 bytes (octets)
+of alternating 1s and 0s. In hexadecimal, this preamble is
+`AA AA AA AA AA AA AA AA`.
+
+A new IEEE 802.3 Ethernet packet is signified by a preamble of 7 bytes
+(octets) of alternating 1s and 0s, followed by a 1-byte
+*start frame delimiter (SFD)* `10101011`. In hexadecimal, this preamble
+and SFD sequence is `AA AA AA AA AA AA AA AB`.
 
 An Ethernet frame is the layer 2 routing portion of the packet, and begins
 immediately after the SFD.
 
 So, to find an Ethernet frame in a stream of data, you'll need to first
-identify the preamble and SFD. Then, capture from the octet after the SFD
-until you see 12 or more octets of idle signal. The captured packet can
-then be trimmed of the additional idle signal and parsed. Use the frame
-check sequence to ensure that you've captured a complete frame.
+identify the preamble (and SFD, if relevant). Then, capture from the octet
+after the SFD until you see 12 or more octets of idle signal. The captured
+packet can then be trimmed of the additional idle signal and parsed. Use the
+frame check sequence to ensure that you've captured a complete frame.
+
+To verify that you have captured the correct type of packet, you can inspect
+the third field of the frame, which is the first differing field between the
+two frame formats. In Ethernet II, this field is the EtherType, which will
+always have a value greater than the maximum frame length of 1536 octets
+(= `0x0600`). In IEEE 802.3, this field is the frame payload length, which
+will always be less than the maximum length of 1500 octets. Thus, checking
+that the field beginning immediately after the MAC addressing field (octets
+12-13 of the frame) is greater than `0x0600` confirms that the frame is an
+Ethernet II frame; otherwise, it is an IEEE 802.3 frame.
 
 ## Your Assignment
 
@@ -122,7 +136,7 @@ that should be helpful:
 In addition to that, you'll find the main files in the repo root containing
 helpful tests and starter code:
 
-- `index.js` - the starting point for your class, which should _only_ import and
+- `index.js` - the starting point for your class, which should *only* import and
   export the class for use (the class should be created in its own module in `lib`).
 - `index.test.js` - a suite of tests that will assess the correctness of your
   your implementation.
@@ -134,11 +148,11 @@ class through a mock network socket which is a subclass of the `stream.Readable`
 class in JavaScript. Data pushed over the this mock socket will be in the form
 of binary data `Buffer` objects. There are several ways to handle `stream`-based data,
 which you can learn about
-[in the Node.js docs on `Stream`](https://nodejs.org/dist/latest-v12.x/docs/api/stream.html).
+[in the Node.js docs on `Stream`](https://nodejs.org/dist/latest-v18.x/docs/api/stream.html).
 
 The output of your class should be communicated by emitting JavaScript `events`.
 You can learn more about working with events
-[in the Node.js docs on `Events`](https://nodejs.org/dist/latest-v12.x/docs/api/events.html).
+[in the Node.js docs on `Events`](https://nodejs.org/dist/latest-v18.x/docs/api/events.html).
 
 Because the output of your class will need to emit events, you may want to try
 [making your class subclass `EventEmitter`](https://eloquentjavascript.net/06_object.html),
@@ -151,36 +165,61 @@ As with Assignment A1, in order to get started with the assignment, you'll want
 to do the following things:
 
 - Review this assignment description in detail
-- Explore JavaScript [Events and `EventEmitter`](https://nodejs.org/dist/latest-v12.x/docs/api/events.html)
-- Explore JavaScript [Readable Streams](https://nodejs.org/dist/latest-v12.x/docs/api/stream.html#stream_readable_streams)
+- Explore JavaScript [Events and `EventEmitter`](https://nodejs.org/dist/latest-v18.x/docs/api/events.html)
+- Explore JavaScript [Readable Streams](https://nodejs.org/dist/latest-v18.x/docs/api/stream.html#stream_readable_streams)
 - Clone this repo to your computer
+- Create a new folder `.github` and a subfolder `workflows` within it. Copy the `node.js.yml` file
+  from the root of the repository into that new subfolder. This will enable automated test runs
+  when you push commits to Github which will show up as part of your pull request.
 - Read through the comments and code included for you, particularly in `index.js` and `lib/EthernetSocketProcessor.js`
-- Copy your the contents of your Assignment A1 repo, which should now be a working ethernet frame parser
-  library, into the `lib/ethernet` folder in this repo. (You may want to exclude the `.git`, `.vscode`,
-  and `.github` folders from that copy, as it may confuse Visual Studio Code to have those folders at
-  multiple levels of the repo.)
+- Add **your completed Assignment A1 Ethernet parser library** as a dependency of your project
+  by using [the NPM `package.json` syntax for Github-based package dependencies](https://docs.npmjs.com/cli/v9/configuring-npm/package-json#git-urls-as-dependencies):
+
+  ```{text}
+  git+ssh://git@github.com:npm/cli.git#branch-or-tag-name
+  ```
+  
+  (Note that this expects that you've already [setup SSH-based command line Github access](https://docs.github.com/en/authentication/connecting-to-github-with-ssh).)
 - Run the following at the command line from within the project directory (use `cd <path>`, replacing
   `<path>` with the folder path to your project directory, to get there):
 
   ```{sh}
-  nvm use 12.18
+  nvm use 18.17
   npm install
   npm test
   ```
 
-This assignment will also automatically check your code style for readability. To run those tests
-at your own command line, you can use:
+  To look at test coverage for what you've written, you can also run:
 
-```{sh}
-npm run lint
-```
+  ```{sh}
+  npm run coverage
+  ```
+
+  This assignment will also automatically check your code style for readability. To run those
+  tests at your own command line, you can use:
+
+  ```{sh}
+  npm run lint
+  ```
+
+  To regenerate documentation for this project, you can run the following:
+  
+  ```{sh}
+  npm run docs
+  ```
 
 ### Submission and Feedback
 
-You must submit your changes as commits to the `master` branch on the repository.
-Github Classroom will create a pull request on the repository for you, titled
-**Feedback**. As you push your commits on the master branch up to Github, they
-will be added to the activity on this pull request.
+You must submit your changes as commits to a new branch of your creation in the
+repository. Commits to the `master` branch will not be reviewed. Please follow
+appropriate naming conventions for git branches: alpha-numeric characters plus
+`-`, `_`, and `/`, with branch name conveying meaning related to your changes.
+
+Once you have a new branch and have pushed that branch to Github, you will need
+to create a new Pull Request based on that branch compared against the `master`
+branch. As you push your commits on the new branch up to Github, they
+will be added to the activity on this pull request. You can create this pull request
+in either Draft or normal mode at your discretion.
 
 In addition to the synchronous mechanism of requesting help via office hours
 appointments, this pull request will be your mechanism for asking questions and
@@ -196,7 +235,10 @@ I will be able to review your work-in-progress and give more relevant answers an
 feedback. If you have a question specific to a particular area of the code, note that
 you can add comments inline on the pull request by clicking on the **Files changed** tab
 of the pull request, then clicking the little blue `+` icon that appears when you hover
-over a specific line of code.
+over a specific line of code. You can also select multiple lines by clicking on a line
+number to highlight it, then shift-clicking on a line somewhere below it to highlight
+the block. Once that set of code is highlighted, you can click the `+` icon on the last
+line of the block to add a comment that references the entire selected block of code.
 
 I will do my best to respond to questions posed during the course of the assignment with
 in a day of the ask. **If you want to ask a question or request early feedback, please tag
